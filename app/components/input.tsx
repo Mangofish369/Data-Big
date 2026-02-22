@@ -1,7 +1,7 @@
 'use client'
 import { useState, useCallback, useRef } from "react";
 
-const API_URL = "http://127.0.0.1:8000";
+const API_URL = process.env.API_URL;
 
 type FileState = {
   kyc_individual: File | null;
