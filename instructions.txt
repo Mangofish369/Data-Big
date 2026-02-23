@@ -1,0 +1,29 @@
+instructions
+1) unzip the folder
+2) open folder in code editor
+3) open the terminal
+4) navigate to the Data-Big-master folder by typing -> cd Data-Big-master
+5) create a virtual environment by typing -> python -m venv venv 
+6) then type this command-> .\venv\Scripts\Activate.ps1
+
+next to download all the necessary modules, 
+7) run this -> pip install -r backend/requirement.txt
+8) install this next -> npm install
+
+9) create an .env file under the Data-Big-master folder and paste this -> NEXT_PUBLIC_API_URL="http://127.0.0.1:8000"
+
+MAKE SURE TO SAVE THE CHANGES TO .env
+
+(On VS code press Ctrl+S to save changes)
+
+10) now run this npm install --save-dev concurrently
+
+11) now we can open up the website by running -> npm run dev
+
+12) Ctrl + click the link that looks like this -> http://localhost:3000
+(Or paste it in your url)
+
+
+IF THE "MESSAGE FAILD TO FETCH" try running this command on the backend
+uvicorn backend.main:app --reload
+
