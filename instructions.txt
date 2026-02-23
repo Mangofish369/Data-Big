@@ -27,10 +27,10 @@ MAKE SURE TO SAVE THE CHANGES TO .env
 
 IF THE "MESSAGE FAILD TO FETCH" try exiting first, then running this command on the backend
 -> uvicorn backend.main:app --reload
-and the run -> npm run dev 
+and then split your terminal and run this on the second terminal-> npm run dev:frontend
+(Repeat step 12 afterwards)
 
 
-IF THE "MESSAGE FAILD TO FETCH" try running this command on the backend
-uvicorn backend.main:app --reload
+
 
 
