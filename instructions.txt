@@ -23,7 +23,14 @@ MAKE SURE TO SAVE THE CHANGES TO .env
 12) Ctrl + click the link that looks like this -> http://localhost:3000
 (Or paste it in your url)
 
+13) Press Ctrl + C to exit the application 
+
+IF THE "MESSAGE FAILD TO FETCH" try exiting first, then running this command on the backend
+-> uvicorn backend.main:app --reload
+and the run -> npm run dev 
+
 
 IF THE "MESSAGE FAILD TO FETCH" try running this command on the backend
 uvicorn backend.main:app --reload
+
 
