@@ -2,11 +2,6 @@ fastapi
 uvicorn[standard]
 pydantic-settings
 pandas
-numpy
 scikit-learn
 python-multipart
-react-markdown
-remark-gfm
-rehype-highlight
-
-@next/mdx
+xgboost
