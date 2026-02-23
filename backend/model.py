@@ -72,6 +72,10 @@ def get_labeled() -> pd.DataFrame:
 
 
 def normalize_df(name: str, df: pd.DataFrame) -> pd.DataFrame:
+    missing = REQUIRED_COLS - set(df.columns)
+    if missing:
+        raise ValueError(f"Transaction file '{name}' is missing columns: {missing}. Found: {list(df.columns)}")
+    
     subset = df[list(REQUIRED_COLS)].copy()
     subset = subset.rename(columns={"transaction_datetime": "date"})
     subset["transaction_method"] = name

@@ -16,38 +16,109 @@ const CODE_DEFS: CodeDef[] = [
   {
     code: "01",
     label: "Disproportionate Wealth",
-    factors: ["income", "sales", "avg_amount", "max_amount"],
-    description: "Customer's declared income or revenue is inconsistent with their transaction amounts.",
+    factors: ["income", "sales"],
+    description: "Customer's declared income or revenue is inconsistent with their transaction profile.",
   },
   {
     code: "02",
-    label: "Excessive Spending",
-    factors: ["total_amount", "num_debit", "num_credit"],
-    description: "Customer's total spending or credit/debit activity is disproportionate to expected profile.",
+    label: "Suspicious Transaction Volume",
+    factors: ["total_amount"],
+    description: "Customer's total transaction volume is disproportionate to their expected profile.",
   },
   {
     code: "03",
+    label: "Unusual Average Transaction Size",
+    factors: ["avg_amount"],
+    description: "Customer's average transaction size is abnormal relative to their profile.",
+  },
+  {
+    code: "04",
+    label: "Suspicious Peak Transactions",
+    factors: ["max_amount"],
+    description: "Customer has unusually large individual transactions that warrant further review.",
+  },
+  {
+    code: "05",
+    label: "High Transaction Volatility",
+    factors: ["std_amount"],
+    description: "Customer shows high variance in transaction amounts, suggesting irregular or structured activity.",
+  },
+  {
+    code: "06",
     label: "Unusual Transaction Frequency",
-    factors: ["num_transactions", "num_abm", "num_wire", "num_eft", "num_emt", "num_westernunion", "num_card", "num_cheque"],
-    description: "Customer shows abnormally high transaction frequency across one or more payment methods.",
+    factors: ["num_transactions"],
+    description: "Customer's overall number of transactions is abnormally high.",
+  },
+  {
+    code: "07",
+    label: "Suspicious Card Activity",
+    factors: ["num_card"],
+    description: "Customer shows abnormal card transaction frequency.",
+  },
+  {
+    code: "08",
+    label: "Suspicious ABM Activity",
+    factors: ["num_abm"],
+    description: "Customer shows abnormal ATM/ABM usage frequency, potentially indicative of structured cash activity.",
+  },
+  {
+    code: "09",
+    label: "Suspicious Cheque Activity",
+    factors: ["num_cheque"],
+    description: "Customer shows abnormal cheque usage frequency.",
+  },
+  {
+    code: "10",
+    label: "Suspicious Debit Activity",
+    factors: ["num_debit"],
+    description: "Customer shows abnormal debit transaction frequency.",
+  },
+  {
+    code: "11",
+    label: "Suspicious Credit Activity",
+    factors: ["num_credit"],
+    description: "Customer shows abnormal credit transaction frequency.",
+  },
+  {
+    code: "12",
+    label: "Suspicious Wire Activity",
+    factors: ["num_wire"],
+    description: "Customer shows abnormal wire transfer frequency, which may indicate layering.",
+  },
+  {
+    code: "13",
+    label: "Suspicious EFT Activity",
+    factors: ["num_eft"],
+    description: "Customer shows abnormal electronic funds transfer frequency.",
+  },
+  {
+    code: "14",
+    label: "Suspicious EMT Activity",
+    factors: ["num_emt"],
+    description: "Customer shows abnormal e-transfer frequency.",
+  },
+  {
+    code: "15",
+    label: "Suspicious Western Union Activity",
+    factors: ["num_westernunion"],
+    description: "Customer shows abnormal Western Union usage, potentially indicative of cross-border laundering.",
   },
 ];
 
 function getCode(explanation: string): string {
   const lower = explanation.toLowerCase();
-  for (const def of CODE_DEFS) {
-    if (def.factors.some(f => lower.includes(f))) return def.code;
-  }
-  return "??";
+  const matched = CODE_DEFS.filter(def =>
+    def.factors.some(f => lower.includes(f))
+  ).map(def => def.code);
+
+  return matched.length > 0 ? matched.join(", ") : "??";
 }
 
 function FlaggedTable({ result, onCodeClick }: { result: PredictResult; onCodeClick: (code: string) => void }) {
   if (!result) return null;
 
-  const flagged = [
-    ...result.people.filter(r => r.prediction === 1),
-    ...result.businesses.filter(r => r.prediction === 1),
-  ];
+  const allCustomers = [...result.people, ...result.businesses]; // 👈 all customers
+  const flagged = allCustomers.filter(r => r.prediction === 1);
 
   if (flagged.length === 0) return (
     <div className="flex items-center justify-center h-32 text-zinc-600 text-sm border border-zinc-800 rounded-lg">
@@ -55,23 +126,39 @@ function FlaggedTable({ result, onCodeClick }: { result: PredictResult; onCodeCl
     </div>
   );
 
-  function downloadCSV() {
-    const baseHeaders = Object.keys(flagged[0]).filter(k => k !== "explanation");
-    const headers = [...baseHeaders, "code"];
-    const rows = [
-      headers,
-      ...flagged.map(r => [
-        ...baseHeaders.map(h => String(r[h] ?? "")),
-        getCode(String(r.explanation ?? "")),
-      ]),
-    ];
-    const csv = rows.map(r => r.map(v => `"${v.replace(/"/g, '""')}"`).join(",")).join("\n");
-    const blob = new Blob([csv], { type: "text/csv" });
+function downloadCSV() {
+  function triggerDownload(content: string, filename: string) {
+    const blob = new Blob([content], { type: "text/csv" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
-    a.href = url; a.download = "flagged_customers.csv"; a.click();
+    a.href = url; a.download = filename; a.click();
     URL.revokeObjectURL(url);
   }
+
+  const rows1 = [
+    ["customer_id", "predicted_label", "risk_score"],
+    ...allCustomers.map(r => [
+      String(r["customer_id"] ?? ""),
+      String(r["prediction"] ?? ""),
+      String(r["probabilities"] ?? ""),
+    ]),
+  ];
+  const csv1 = rows1.map(r => r.map(v => `"${v.replace(/"/g, '""')}"`).join(",")).join("\n");
+  triggerDownload(csv1, "model_output.csv");
+
+  // Delay second download to avoid browser blocking it
+  setTimeout(() => {
+    const rows2 = [
+      ["customer_id", "explanation"],
+      ...allCustomers.map(r => [
+        String(r["customer_id"] ?? ""),
+        String(r["explanation"] ?? ""),
+      ]),
+    ];
+    const csv2 = rows2.map(r => r.map(v => `"${v.replace(/"/g, '""')}"`).join(",")).join("\n");
+    triggerDownload(csv2, "model_output_explanations.csv");
+  }, 500);
+}
 
   return (
     <div className="flex flex-col gap-3">
