@@ -1,7 +1,7 @@
 'use client'
 import { useState, useCallback, useRef } from "react";
 
-const API_URL = process.env.API_URL;
+const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 type FileState = {
   kyc_individual: File | null;

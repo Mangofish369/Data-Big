@@ -1,7 +1,10 @@
 'use client'
 import { useState } from "react";
 import Input, { PredictResult } from "@/app/components/input";
-
+import References from "./components/references";
+import Instructions from "./components/instructions";
+import Knowledge_library from "./components/knowledge_library";
+import Methodology from "./components/methodology";
 type CodeDef = {
   code: string;
   label: string;
@@ -163,7 +166,7 @@ function CodesTable({ search, onSearchChange }: { search: string; onSearchChange
   );
 }
 
-type Tab = "checker" | "flagged" | "codes";
+type Tab = "checker" | "flagged" | "codes" | "references" | "instructions" | "knowledge_library" | "methodology" ;
 
 export default function Home() {
   const [tab, setTab] = useState<Tab>("checker");
@@ -187,9 +190,13 @@ export default function Home() {
     : null;
 
   const tabs: { id: Tab; label: string; onlyAfter?: boolean }[] = [
+    { id: "instructions", label: "AML Checker File Instructions"},
     { id: "checker", label: done ? "Again" : "AML Checker" },
+    { id: "knowledge_library", label: "AML Knowledge Library"},
+    { id: "methodology", label: "Our Methodology"},
     { id: "flagged", label: "Flagged", onlyAfter: true },
     { id: "codes", label: "Codes", onlyAfter: true },
+    { id: "references", label: "References and Appendix"},
   ];
 
   return (
@@ -216,11 +223,24 @@ export default function Home() {
         </div>
       </div>
 
-      <div className="max-w-2xl mx-auto px-8 py-10 flex flex-col gap-8">
-        {tab === "checker" && <Input onResult={handleResult} />}
-        {tab === "flagged" && <FlaggedTable result={result} onCodeClick={handleCodeClick} />}
-        {tab === "codes" && <CodesTable search={codeSearch} onSearchChange={setCodeSearch} />}
-      </div>
+{tab === "knowledge_library" || tab === "references" || tab === "methodology" ? (
+  // Full-width container for Knowledge Library + References
+  <div className="w-full max-w-screen-2xl mx-auto px-8 py-10">
+    {tab === "knowledge_library" && <Knowledge_library />}
+    {tab === "references" && <References />}
+    {tab === "methodology" && <Methodology />}
+  </div>
+) : (
+  // Standard width container for other tabs
+  <div className="max-w-2xl mx-auto px-8 py-10 flex flex-col gap-8">
+    {tab === "checker" && <Input onResult={handleResult} />}
+    {tab === "flagged" && <FlaggedTable result={result} onCodeClick={handleCodeClick} />}
+    {tab === "codes" && (
+      <CodesTable search={codeSearch} onSearchChange={setCodeSearch} />
+    )}
+    {tab === "instructions" && <Instructions />}
+  </div>
+)}
     </div>
   );
 }
